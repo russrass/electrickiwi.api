@@ -2,6 +2,7 @@ import requests
 import random
 import time
 import arrow
+import os
 
 from hashlib import md5
 from decimal import Decimal
@@ -167,13 +168,12 @@ def hop_score():
         loaded = True
         print("Loaded Credentials: OK")
     except:
-        email    = input('EK Email: ')
-        password = ek.password_hash(input('EK Password: '))
-    
+        email = raw_input("EK Email: ")
+        password = ek.password_hash(raw_input('EK Password: '))
     customer = ek.login(email, password)
     print('Logged in: OK')
 
-    if not loaded and input('Save credentials? Y/N : ').lower() in ('y', 'yes'):
+    if not loaded and raw_input('Save credentials? Y/N : ').lower() in ('y', 'yes'):
         with open('ek_creds.txt', 'w') as f:
             f.write(email+'\n'+password)
 
@@ -210,9 +210,39 @@ def hop_score():
     print('Missed HOP: {}kWh (${:.2f})'.format(wrong_kwh, wrong_kwh * kwh_cost))
     print('HOP Score: {:.2f}%'.format(Decimal(100.0) - ((wrong_kwh / hop_savings) * 100)))
 
+
+def set_hop_hour(hour):
+    ek       = ElectricKiwi()
+    token    = ek.at_token()
+    current_dir = os.path.dirname(os.path.realpath(__file__))
+
+    loaded = False
+    try:
+        print (current_dir + '/ek_creds.txt')
+        with open(current_dir + '/ek_creds.txt') as f:
+            email    = f.readline().strip()
+            password = f.readline().strip()
+
+        loaded = True
+        print("Loaded Credentials: OK")
+    except:
+        email = raw_input("EK Email: ")
+        password = ek.password_hash(raw_input('EK Password: '))
+    customer = ek.login(email, password)
+    print('Logged in: OK')
+
+    if not loaded and raw_input('Save credentials? Y/N : ').lower() in ('y', 'yes'):
+        with open(current_dir + '/ek_creds.txt', 'w') as f:
+            f.write(email+'\n'+password)
+
+    return(ek.set_hop_hour(hour))
+    #print os.path.realpath(__file__)
+
+    
 if __name__ == '__main__':
     try:
-        hop_score()
+        #hop_score()
+        set_hop_hour(31)
     except Exception as e:
         print(e)
 
